@@ -53,6 +53,23 @@ CREATE TABLE `users` (
   UNIQUE KEY `email` (`email`),
   UNIQUE KEY `phone` (`phone`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
+-- Insert test student (password: avi@1234)
+INSERT INTO `users` (
+    `unique_user_id`,
+    `full_name`,
+    `email`,
+    `phone`,
+    `address`,
+    `password`
+  )
+VALUES (
+    'USR-TEST-AVI',
+    'Avi Test Student',
+    'avi@gmail.com',
+    '9999990001',
+    'Test Address',
+    '$2y$12$F27cTz6BZSU20VO1MnQF2upxNFqpCbpxcJRqWuBuN8wPDxFV6wmrm'
+  );
 -- 3. library Tables
 DROP TABLE IF EXISTS `library_tables`;
 CREATE TABLE `library_tables` (

@@ -136,9 +136,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             $plan_id = $_POST['plan_id'] ?? '';
             if (empty($plan_id)) throw new Exception('Please select a plan.');
 
-            $checkSub = $pdo->prepare("SELECT subscription_id FROM user_subscriptions WHERE user_id = ? AND subscription_status = 'Active' AND payment_status = 'Paid'");
-            $checkSub->execute([$user_id]);
-            if ($checkSub->fetch()) throw new Exception('You already have an active table booking.');
+            // Allow one student account to book multiple available tables.
+            // The selected table availability check below prevents double-booking the same table.
 
             $pStmt = $pdo->prepare("SELECT price, duration_days FROM subscription_plans WHERE plan_id = ? AND active = 1");
             $pStmt->execute([$plan_id]);
