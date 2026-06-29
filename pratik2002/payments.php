@@ -46,6 +46,9 @@ $query = "
         us.amount_paid,
         us.payment_status,
         us.subscription_status,
+        p.payment_reference,
+        p.utr_number,
+        p.payment_date,
         u.full_name,
         u.email,
         u.phone,
@@ -55,7 +58,8 @@ $query = "
     JOIN users u ON us.user_id = u.user_id
     JOIN library_tables t ON us.table_id = t.table_id
     JOIN subscription_plans sp ON us.plan_id = sp.plan_id
-    ORDER BY us.start_date DESC
+    LEFT JOIN payments p ON p.subscription_id = us.subscription_id
+    ORDER BY COALESCE(p.payment_date, us.start_date) DESC
 ";
 $subStmt = $pdo->query($query);
 $subscriptions = $subStmt->fetchAll();
@@ -112,6 +116,7 @@ $showBackButton = true;
                             <th>Table No.</th>
                             <th>Plan</th>
                             <th>Amount</th>
+                            <th>Transaction ID</th>
                             <th>Payment Status</th>
                             <th>Expiry Status</th>
                         </tr>
@@ -142,6 +147,10 @@ $showBackButton = true;
                                     <td data-label="Table No."><strong>T-<?= htmlspecialchars($sub['table_number']) ?></strong></td>
                                     <td data-label="Plan"><?= htmlspecialchars($sub['plan_name']) ?></td>
                                     <td data-label="Amount"><strong>₹<?= number_format($sub['amount_paid'], 2) ?></strong></td>
+                                    <td data-label="Transaction ID">
+                                        <strong><?= htmlspecialchars($sub['utr_number'] ?: 'Not submitted') ?></strong><br>
+                                        <span class="text-sm"><?= htmlspecialchars($sub['payment_reference'] ?? '-') ?></span>
+                                    </td>
                                     <td data-label="Payment Status">
                                         <?php if ($sub['payment_status'] === 'Paid'): ?>
                                             <span class="badge badge-active">Paid</span>
@@ -157,7 +166,7 @@ $showBackButton = true;
                             <?php endforeach; ?>
                         <?php else: ?>
                             <tr>
-                                <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                                <td colspan="7" style="text-align: center; padding: 40px; color: var(--text-muted);">
                                     No payment or subscription records found.
                                 </td>
                             </tr>
