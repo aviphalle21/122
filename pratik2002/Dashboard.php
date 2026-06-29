@@ -22,7 +22,8 @@ $totalRevenue = $pdo->query("SELECT COALESCE(SUM(amount), 0) FROM payments WHERE
 $monthRevenue = $pdo->query("SELECT COALESCE(SUM(amount), 0) FROM payments WHERE payment_status = 'Paid' AND MONTH(payment_date) = MONTH(CURRENT_DATE) AND YEAR(payment_date) = YEAR(CURRENT_DATE)")->fetchColumn();
 
 // 4. Active Bookings
-$activeBookings = $pdo->query("SELECT COUNT(*) FROM user_subscriptions WHERE subscription_status = 'Active'")->fetchColumn();
+$activeBookings = $pdo->query("SELECT COUNT(*) FROM bookings WHERE booking_status = 'Active'")->fetchColumn();
+$pendingBookings = $pdo->query("SELECT COUNT(*) FROM bookings WHERE booking_status = 'Pending'")->fetchColumn();
 
 // 5. Recent Bookings (Limit 5)
 $recentBookings = $pdo->query("
@@ -119,9 +120,9 @@ $notifications = $notifStmt->fetchAll();
         <div class="stat-card">
             <div class="stat-icon" style="background:#ffedd5; color:#f97316;">📅</div>
             <div class="stat-info">
-                <h4>Active Bookings</h4>
+                <h4>Confirmed Bookings</h4>
                 <h2><?= number_format($activeBookings) ?></h2>
-                <div class="stat-trend trend-neutral">Currently active</div>
+                <div class="stat-trend trend-neutral"><?= number_format($pendingBookings) ?> pending approval</div>
             </div>
         </div>
     </div>
@@ -159,7 +160,7 @@ $notifications = $notifStmt->fetchAll();
         <div class="list-card">
             <div class="list-header">
                 <h3>Recent Bookings</h3>
-                <a href="tables.php">View All</a>
+                <a href="bookings.php">View All</a>
             </div>
             <?php foreach ($recentBookings as $b): ?>
                 <div class="list-item">

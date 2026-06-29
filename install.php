@@ -241,7 +241,10 @@ CREATE TABLE `bookings` (
   `booking_date`      TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `start_date`        DATE          NOT NULL,
   `expiry_date`       DATE          NOT NULL,
-  `booking_status`    ENUM('Pending','Active','Expired','Cancelled','Maintenance') DEFAULT 'Pending',
+  `booking_status`    ENUM('Pending','Active','Rejected','Expired','Cancelled','Maintenance') DEFAULT 'Pending',
+  `rejection_reason`  TEXT DEFAULT NULL,
+  `reviewed_by`       INT(11) DEFAULT NULL,
+  `reviewed_at`       DATETIME DEFAULT NULL,
   `booking_price`     DECIMAL(10,2) DEFAULT NULL,
   `plan_price`        DECIMAL(10,2) DEFAULT NULL,
   PRIMARY KEY (`booking_id`),
@@ -341,7 +344,29 @@ try {
     $log[] = ['error', 'Admin seed failed: ' . htmlspecialchars($e->getMessage())];
 }
 
-// ── 19. Seed: subscription plans ─────────────────────────────────────────────
+// ── 19. Seed: test student account ───────────────────────────────────────────
+try {
+    $email = 'avi@gmail.com';
+    $chk = $conn->query("SELECT user_id FROM `users` WHERE email = '$email' LIMIT 1");
+    if ($chk && $chk->num_rows === 0) {
+        // Password: avi@1234 — test account for website verification.
+        $hash = '$2y$12$F27cTz6BZSU20VO1MnQF2upxNFqpCbpxcJRqWuBuN8wPDxFV6wmrm';
+        $stmt = $conn->prepare("
+            INSERT INTO `users` (`unique_user_id`, `full_name`, `email`, `phone`, `address`, `password`)
+            VALUES ('USR-TEST-AVI', 'Avi Test Student', ?, '9999990001', 'Test Address', ?)
+        ");
+        $stmt->bind_param('ss', $email, $hash);
+        $stmt->execute();
+        $stmt->close();
+        $log[] = ['ok', 'Test student seeded — email: <b>avi@gmail.com</b> / password: <b>avi@1234</b>.'];
+    } else {
+        $log[] = ['info', 'Test student avi@gmail.com already exists — skipped.'];
+    }
+} catch (Throwable $e) {
+    $log[] = ['error', 'Test student seed failed: ' . htmlspecialchars($e->getMessage())];
+}
+
+// ── 20. Seed: subscription plans ─────────────────────────────────────────────
 try {
     $chk = $conn->query("SELECT plan_id FROM `subscription_plans` LIMIT 1");
     if ($chk && $chk->num_rows === 0) {
@@ -358,7 +383,7 @@ try {
     $log[] = ['error', 'Plan seed failed: ' . htmlspecialchars($e->getMessage())];
 }
 
-// ── 20. Seed: 39 library tables ───────────────────────────────────────────────
+// ── 21. Seed: 39 library tables ───────────────────────────────────────────────
 try {
     $chk = $conn->query("SELECT table_id FROM `library_tables` LIMIT 1");
     if ($chk && $chk->num_rows === 0) {
@@ -380,7 +405,7 @@ try {
     $log[] = ['error', 'Table seed failed: ' . htmlspecialchars($e->getMessage())];
 }
 
-// ── 21. Check for any errors ──────────────────────────────────────────────────
+// ── 22. Check for any errors ──────────────────────────────────────────────────
 $hasError = false;
 foreach ($log as $entry) {
     if ($entry[0] === 'error') {

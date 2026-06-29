@@ -53,6 +53,23 @@ CREATE TABLE `users` (
   UNIQUE KEY `email` (`email`),
   UNIQUE KEY `phone` (`phone`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
+-- Insert test student (password: avi@1234)
+INSERT INTO `users` (
+    `unique_user_id`,
+    `full_name`,
+    `email`,
+    `phone`,
+    `address`,
+    `password`
+  )
+VALUES (
+    'USR-TEST-AVI',
+    'Avi Test Student',
+    'avi@gmail.com',
+    '9999990001',
+    'Test Address',
+    '$2y$12$F27cTz6BZSU20VO1MnQF2upxNFqpCbpxcJRqWuBuN8wPDxFV6wmrm'
+  );
 -- 3. library Tables
 DROP TABLE IF EXISTS `library_tables`;
 CREATE TABLE `library_tables` (
@@ -154,6 +171,7 @@ DROP TABLE IF EXISTS `payments`;
 CREATE TABLE `payments` (
   `payment_id` int(11) NOT NULL AUTO_INCREMENT,
   `payment_reference` varchar(100) NOT NULL,
+  `utr_number` varchar(50) DEFAULT NULL COMMENT 'UPI Transaction Reference entered by user',
   `user_id` int(11) NOT NULL,
   `subscription_id` int(11) NOT NULL,
   `amount` decimal(10, 2) NOT NULL,
@@ -180,10 +198,14 @@ CREATE TABLE `bookings` (
   `booking_status` enum(
     'Pending',
     'Active',
+    'Rejected',
     'Expired',
     'Cancelled',
     'Maintenance'
   ) DEFAULT 'Pending',
+  `rejection_reason` text DEFAULT NULL,
+  `reviewed_by` int(11) DEFAULT NULL,
+  `reviewed_at` datetime DEFAULT NULL,
   `booking_price` decimal(10, 2) DEFAULT NULL,
   `plan_price` decimal(10, 2) DEFAULT NULL,
   PRIMARY KEY (`booking_id`),

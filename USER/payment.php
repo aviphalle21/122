@@ -136,9 +136,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             $plan_id = $_POST['plan_id'] ?? '';
             if (empty($plan_id)) throw new Exception('Please select a plan.');
 
-            $checkSub = $pdo->prepare("SELECT subscription_id FROM user_subscriptions WHERE user_id = ? AND subscription_status = 'Active' AND payment_status = 'Paid'");
-            $checkSub->execute([$user_id]);
-            if ($checkSub->fetch()) throw new Exception('You already have an active table booking.');
+            // Allow one student account to book multiple available tables.
+            // The selected table availability check below prevents double-booking the same table.
 
             $pStmt = $pdo->prepare("SELECT price, duration_days FROM subscription_plans WHERE plan_id = ? AND active = 1");
             $pStmt->execute([$plan_id]);
@@ -188,13 +187,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             if (empty($utr))       throw new Exception('Please enter your UPI transaction number.');
             if (strlen($utr) < 6)  throw new Exception('Transaction number seems too short. Please check and try again.');
 
-            // Save UTR to payments table
-            $pdo->prepare("UPDATE payments SET utr_number = ?, payment_method = 'UPI' WHERE payment_reference = ? AND user_id = ?")
-                ->execute([$utr, $reference, $user_id]);
+            $pdo->beginTransaction();
+            $paymentStmt = $pdo->prepare("
+                SELECT p.payment_id, p.subscription_id, p.amount, us.table_id, us.plan_id, sp.duration_days
+                FROM payments p
+                JOIN user_subscriptions us ON us.subscription_id = p.subscription_id
+                JOIN subscription_plans sp ON sp.plan_id = us.plan_id
+                WHERE p.payment_reference = ? AND p.user_id = ?
+                FOR UPDATE
+            ");
+            $paymentStmt->execute([$reference, $user_id]);
+            $payment = $paymentStmt->fetch();
+            if (!$payment) throw new Exception('Payment request not found.');
 
-            jsonResponse(['ok' => true] + completePaidBooking($pdo, $user_id, $table_id, $reference, $user));
+            // Save UTR to payments table and keep it pending for admin verification.
+            $pdo->prepare("UPDATE payments SET utr_number = ?, payment_method = 'UPI', payment_status = 'Pending' WHERE payment_id = ?")
+                ->execute([$utr, $payment['payment_id']]);
+            $pdo->prepare("UPDATE user_subscriptions SET payment_status = 'Pending', subscription_status = 'Active' WHERE subscription_id = ?")
+                ->execute([$payment['subscription_id']]);
+
+            $existingBooking = $pdo->prepare("SELECT booking_id FROM bookings WHERE user_id = ? AND table_id = ? AND booking_status = 'Pending' LIMIT 1");
+            $existingBooking->execute([$user_id, $payment['table_id']]);
+            if (!$existingBooking->fetch()) {
+                $bookingRef = 'BK-' . mt_rand(100000, 999999);
+                $pdo->prepare("INSERT INTO bookings (user_id, table_id, start_date, expiry_date, booking_status, booking_reference, plan_price, booking_price) VALUES (?, ?, CURDATE(), DATE_ADD(CURDATE(), INTERVAL ? DAY), 'Pending', ?, ?, ?)")
+                    ->execute([$user_id, $payment['table_id'], $payment['duration_days'], $bookingRef, $payment['amount'], $payment['amount']]);
+                $bookingId = $pdo->lastInsertId();
+            } else {
+                $bookingId = null;
+            }
+
+            $pdo->prepare("INSERT INTO system_notifications (type, title, message, related_id) VALUES ('booking', 'Booking Awaiting Admin Approval', ?, ?)")
+                ->execute([$user['full_name'] . " submitted UPI Transaction ID {$utr} for Table T-{$table_id}. Please verify and accept/reject.", $bookingId]);
+            $pdo->commit();
+
+            @mail(
+                $user['email'],
+                'Booking Submitted for Review – Saraswati Abhyasika',
+                "Hello {$user['full_name']},\n\nWe received your transaction ID {$utr} for Table T-{$table_id}. Your booking is pending admin verification. You will receive another email after it is accepted or rejected.\n\nThank you!",
+                "From: noreply@saraswatiabhyasika.com\r\nX-Mailer: PHP/" . phpversion()
+            );
+
+            jsonResponse(['ok' => true, 'completed' => false, 'pending' => true, 'message' => 'Transaction ID submitted. Your booking is pending admin verification.', 'redirect' => 'dashboard.php']);
         }
     } catch (Exception $e) {
+        if (isset($pdo) && $pdo instanceof PDO && $pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
         jsonResponse(['ok' => false, 'message' => $e->getMessage()]);
     }
 }
@@ -846,14 +885,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
             utrSubmitBtn.disabled = true;
             utrSubmitBtn.textContent = 'Confirming…';
-            showStatus('Verifying and confirming your booking…', 'waiting');
+            showStatus('Submitting transaction ID for admin verification…', 'waiting');
 
             try {
                 const result = await postAction('confirm_utr', {
                     reference: activeReference,
                     utr
                 });
-                if (result.ok && result.completed) {
+                if (result.ok && result.pending) {
+                    showStatus('✅ Transaction ID submitted. Admin will verify and email you after accept/reject. Redirecting…', 'success');
+                    setTimeout(() => window.location.href = result.redirect || 'dashboard.php', 1800);
+                } else if (result.ok && result.completed) {
                     showStatus('✅ Booking confirmed! Redirecting…', 'success');
                     setTimeout(() => window.location.href = result.redirect, 1200);
                 } else {
