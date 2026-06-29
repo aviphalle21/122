@@ -1,0 +1,23 @@
+[27-Jun-2026 19:46:36 Europe/Berlin] PHP Fatal error:  Uncaught Error: Undefined constant "PAYMENT_POLL_SECONDS" in C:\xampp1\htdocs\aa\USER\payment.php:618
+Stack trace:
+#0 {main}
+  thrown in C:\xampp1\htdocs\aa\USER\payment.php on line 618
+[27-Jun-2026 20:03:41 Europe/Berlin] PHP Warning:  Undefined array key "payment_date" in C:\xampp1\htdocs\aa\USER\payment.php on line 62
+[27-Jun-2026 20:03:41 Europe/Berlin] PHP Deprecated:  strtotime(): Passing null to parameter #1 ($datetime) of type string is deprecated in C:\xampp1\htdocs\aa\USER\payment.php on line 62
+[27-Jun-2026 20:16:27 Europe/Berlin] PHP Warning:  Undefined array key "payment_date" in C:\xampp1\htdocs\aa\USER\payment.php on line 62
+[27-Jun-2026 20:16:27 Europe/Berlin] PHP Deprecated:  strtotime(): Passing null to parameter #1 ($datetime) of type string is deprecated in C:\xampp1\htdocs\aa\USER\payment.php on line 62
+[27-Jun-2026 20:21:28 Europe/Berlin] Database connection failed: SQLSTATE[HY000] [1049] Unknown database 'library'
+[27-Jun-2026 20:21:30 Europe/Berlin] Database connection failed: SQLSTATE[HY000] [1049] Unknown database 'library'
+[27-Jun-2026 20:21:31 Europe/Berlin] Database connection failed: SQLSTATE[HY000] [1049] Unknown database 'library'
+[27-Jun-2026 20:21:31 Europe/Berlin] Database connection failed: SQLSTATE[HY000] [1049] Unknown database 'library'
+[27-Jun-2026 20:21:31 Europe/Berlin] Database connection failed: SQLSTATE[HY000] [1049] Unknown database 'library'
+[27-Jun-2026 20:21:31 Europe/Berlin] Database connection failed: SQLSTATE[HY000] [1049] Unknown database 'library'
+[27-Jun-2026 20:21:32 Europe/Berlin] Database connection failed: SQLSTATE[HY000] [1049] Unknown database 'library'
+[27-Jun-2026 20:21:32 Europe/Berlin] Database connection failed: SQLSTATE[HY000] [1049] Unknown database 'library'
+[27-Jun-2026 20:21:32 Europe/Berlin] Database connection failed: SQLSTATE[HY000] [1049] Unknown database 'library'
+[27-Jun-2026 20:21:32 Europe/Berlin] Database connection failed: SQLSTATE[HY000] [1049] Unknown database 'library'
+[27-Jun-2026 20:21:33 Europe/Berlin] Database connection failed: SQLSTATE[HY000] [1049] Unknown database 'library'
+[27-Jun-2026 20:21:34 Europe/Berlin] Database connection failed: SQLSTATE[HY000] [1049] Unknown database 'library'
+[27-Jun-2026 20:21:34 Europe/Berlin] Database connection failed: SQLSTATE[HY000] [1049] Unknown database 'library'
+[27-Jun-2026 20:21:35 Europe/Berlin] Database connection failed: SQLSTATE[HY000] [1049] Unknown database 'library'
+[29-Jun-2026 08:14:07 Europe/Berlin] Database connection failed: SQLSTATE[HY000] [1049] Unknown database 'library'
