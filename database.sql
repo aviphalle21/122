@@ -154,6 +154,7 @@ DROP TABLE IF EXISTS `payments`;
 CREATE TABLE `payments` (
   `payment_id` int(11) NOT NULL AUTO_INCREMENT,
   `payment_reference` varchar(100) NOT NULL,
+  `utr_number` varchar(50) DEFAULT NULL COMMENT 'UPI Transaction Reference entered by user',
   `user_id` int(11) NOT NULL,
   `subscription_id` int(11) NOT NULL,
   `amount` decimal(10, 2) NOT NULL,
@@ -180,10 +181,14 @@ CREATE TABLE `bookings` (
   `booking_status` enum(
     'Pending',
     'Active',
+    'Rejected',
     'Expired',
     'Cancelled',
     'Maintenance'
   ) DEFAULT 'Pending',
+  `rejection_reason` text DEFAULT NULL,
+  `reviewed_by` int(11) DEFAULT NULL,
+  `reviewed_at` datetime DEFAULT NULL,
   `booking_price` decimal(10, 2) DEFAULT NULL,
   `plan_price` decimal(10, 2) DEFAULT NULL,
   PRIMARY KEY (`booking_id`),

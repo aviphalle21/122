@@ -254,6 +254,9 @@ $unreadCount = $unreadCountStmt->fetchColumn();
             <a href="tables.php" class="nav-item <?= basename($_SERVER['PHP_SELF']) == 'tables.php' ? 'active' : '' ?>">
                 <span class="icon">🪑</span> Tables
             </a>
+            <a href="bookings.php" class="nav-item <?= basename($_SERVER['PHP_SELF']) == 'bookings.php' ? 'active' : '' ?>">
+                <span class="icon">✅</span> Bookings
+            </a>
             <a href="payments.php" class="nav-item <?= basename($_SERVER['PHP_SELF']) == 'payments.php' ? 'active' : '' ?>">
                 <span class="icon">💳</span> Payments
             </a>
@@ -268,8 +271,11 @@ $unreadCount = $unreadCountStmt->fetchColumn();
             <a href="reports.php" class="nav-item <?= basename($_SERVER['PHP_SELF']) == 'reports.php' ? 'active' : '' ?>">
                 <span class="icon">📊</span> Reports
             </a>
+            <a href="librarians.php" class="nav-item <?= basename($_SERVER['PHP_SELF']) == 'librarians.php' ? 'active' : '' ?>">
+                <span class="icon">🧑‍🏫</span> Librarians
+            </a>
             <a href="settings.php" class="nav-item <?= basename($_SERVER['PHP_SELF']) == 'settings.php' ? 'active' : '' ?>">
-                <span class="icon">⚙️</span> Settings
+                <span class="icon">⚙️</span> Themes & Settings
             </a>
         </nav>
 
